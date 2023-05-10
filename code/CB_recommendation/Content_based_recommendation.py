@@ -15,7 +15,8 @@ def cos_measure(item_feature_vector, user_rated_items_matrix):
     """
     x_c = (item_feature_vector * user_rated_items_matrix.T) + 0.0000001
     mod_x = np.sqrt(item_feature_vector * item_feature_vector.T)
-    mod_c = np.sqrt((user_rated_items_matrix * user_rated_items_matrix.T).diagonal())
+    mod_c = np.sqrt((user_rated_items_matrix *
+                    user_rated_items_matrix.T).diagonal())
     cos_xc = x_c / (mod_x * mod_c)
 
     return cos_xc
@@ -39,11 +40,13 @@ def comp_user_feature(user_rated_vector, item_feature_matrix):
     :param item_feature_matrix: item的特征矩阵
     :return: user的喜好特征
     """
-    #user评分的均值
+    # user评分的均值
     user_rating_mean = user_rated_vector.mean()
     # 分别得到user喜欢和不喜欢item的向量以及item对应的引索(以该user的评分均值来划分)
-    user_like_item = user_rated_vector.loc[user_rated_vector >= user_rating_mean]
-    user_unlike_item = user_rated_vector.loc[user_rated_vector < user_rating_mean]
+    user_like_item = user_rated_vector.loc[user_rated_vector >=
+                                           user_rating_mean]
+    user_unlike_item = user_rated_vector.loc[user_rated_vector <
+                                             user_rating_mean]
 
     user_like_item_index = map(int, user_like_item.index.values)
     user_unlike_item_index = map(int, user_unlike_item.index.values)
@@ -51,17 +54,19 @@ def comp_user_feature(user_rated_vector, item_feature_matrix):
     user_like_item_rating = np.matrix(user_like_item.values)
     user_unlike_item_rating = np.matrix(user_unlike_item.values)
 
-    #得到user喜欢和不喜欢item的特征矩阵
-    user_like_item_feature_matrix = np.matrix(item_feature_matrix.loc[user_like_item_index, :].values)
-    user_unlike_item_feature_matrix = np.matrix(item_feature_matrix.loc[user_unlike_item_index, :].values)
+    # 得到user喜欢和不喜欢item的特征矩阵
+    user_like_item_feature_matrix = np.matrix(
+        item_feature_matrix.loc[user_like_item_index, :].values)
+    user_unlike_item_feature_matrix = np.matrix(
+        item_feature_matrix.loc[user_unlike_item_index, :].values)
 
     # print user_like_item, user_unlike_item
 
-    #计算user的喜好特征向量，以其对item的评分作为权重
+    # 计算user的喜好特征向量，以其对item的评分作为权重
     weight_of_like = user_like_item_rating / user_like_item_rating.sum()
     weight_of_unlike = user_unlike_item_rating / user_unlike_item_rating.sum()
 
-    #计算user的喜欢特征和不喜欢特征以及总特征
+    # 计算user的喜欢特征和不喜欢特征以及总特征
     user_like_feature = weight_of_like * user_like_item_feature_matrix
     user_unlike_feature = weight_of_unlike * user_unlike_item_feature_matrix
     user_feature_tol = user_like_feature - user_unlike_feature
@@ -81,22 +86,22 @@ def CB_recommend_estimate(user_feature, item_feature_matrix, item):
     # item_index = item_feature_matrix.index
     # item_feature = item_feature_matrix.values
 
-    #得到所有user评分的item的引索
+    # 得到所有user评分的item的引索
     user_item_index = user_feature.index
 
-    #某一用户已有评分item的评分向量和引索以及item的评分矩阵
+    # 某一用户已有评分item的评分向量和引索以及item的评分矩阵
     user_rated_vector = np.matrix(user_feature.loc[user_feature > 0].values)
     user_rated_items = map(int, user_item_index[user_feature > 0].values)
-    user_rated_items_matrix = np.matrix(item_feature_matrix.loc[user_rated_items, :].values)
+    user_rated_items_matrix = np.matrix(
+        item_feature_matrix.loc[user_rated_items, :].values)
 
-
-    #待评分itme的特征向量，函数中给出的是该item的Id
+    # 待评分itme的特征向量，函数中给出的是该item的Id
     item_feature_vector = np.matrix(item_feature_matrix.loc[item].values)
 
-    #得到待计算item与用户已评分的items的余弦夹角相识度的向量
+    # 得到待计算item与用户已评分的items的余弦夹角相识度的向量
     cos_xc = cos_measure(item_feature_vector, user_rated_items_matrix)
 
-    #计算uesr对该item的评分估计
+    # 计算uesr对该item的评分估计
     rate_hat = estimate_rate(user_rated_vector, cos_xc)
 
     return rate_hat
@@ -115,14 +120,17 @@ def CB_recommend_top_K(user_feature, item_feature_matrix, K):
     user_rated_vector = user_feature.loc[user_feature > 0]
     user_unrated_vector = user_feature.loc[user_feature == 0]
 
-    #未评分item的特征矩阵
+    # 未评分item的特征矩阵
     user_unrated_item_index = map(int, user_unrated_vector.index.values)
-    user_unrated_item_feature_matrix = np.matrix(item_feature_matrix.loc[user_unrated_item_index, :].values)
+    user_unrated_item_feature_matrix = np.matrix(
+        item_feature_matrix.loc[user_unrated_item_index, :].values)
 
-    #user喜好总特征
-    user_feature_tol = comp_user_feature(user_rated_vector, item_feature_matrix)
-    #得到相似度并进行排序
-    similarity = list(np.array(cos_measure(user_feature_tol, user_unrated_item_feature_matrix))[0])
+    # user喜好总特征
+    user_feature_tol = comp_user_feature(
+        user_rated_vector, item_feature_matrix)
+    # 得到相似度并进行排序
+    similarity = list(np.array(cos_measure(user_feature_tol,
+                      user_unrated_item_feature_matrix))[0])
     key = {'item_index': user_unrated_item_index,
            'similarity': similarity}
     item_sim_df = pd.DataFrame(key)
@@ -132,8 +140,10 @@ def CB_recommend_top_K(user_feature, item_feature_matrix, K):
 
 
 if __name__ == '__main__':
-    movies_feature = pd.read_csv('../data/Moivelens/ml-latest-small/movies_feature.csv', index_col=0)
-    user_rating = pd.read_csv('../data/Moivelens/ml-latest-small/user-rating.csv', index_col=0)
-    user_feature = user_rating.loc[100,:]
-    print CB_recommend_estimate(user_feature, movies_feature, 10)
-    print CB_recommend_top_K(user_feature, movies_feature, 10)
+    movies_feature = pd.read_csv(
+        '../data/Moivelens/ml-latest-small/movies_feature.csv', index_col=0)
+    user_rating = pd.read_csv(
+        '../data/Moivelens/ml-latest-small/user-rating.csv', index_col=0)
+    user_feature = user_rating.loc[100, :]
+    print(CB_recommend_estimate(user_feature, movies_feature, 10))
+    print(CB_recommend_top_K(user_feature, movies_feature, 10))

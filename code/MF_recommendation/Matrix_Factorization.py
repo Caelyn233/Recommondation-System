@@ -23,7 +23,6 @@ class Matrix_Factorization(object):
         self.regularization = regularization
         self.random_state = random_state
 
-
     def fit(self, R):
 
         np.random.seed(self.random_state)
@@ -35,7 +34,6 @@ class Matrix_Factorization(object):
         self.r_index = self.R.nonzero()
         self.r = self.R[self.r_index[0], self.r_index[1]]
         self.length = len(self.r)
-
 
     def _comp_descent(self, index):
 
@@ -57,7 +55,6 @@ class Matrix_Factorization(object):
 
         return r_i, r_j, p_i, q_j, descent_p_i, descent_q_j
 
-
     def _update(self, p_i, q_j, descent_p_i, descent_q_j):
 
         p_i_new = p_i - self.alpha * descent_p_i
@@ -65,22 +62,22 @@ class Matrix_Factorization(object):
 
         return p_i_new, q_j_new
 
-
     def _estimate_r_hat(self):
 
         r_hat = self.P.dot(self.Q.T)[self.r_index[0], self.r_index[1]]
 
         return r_hat
 
-
     def start(self):
 
         epoch_num = 1
         while epoch_num <= self.epoch:
-            for index in xrange(0, self.length):
+            for index in range(0, self.length):
 
-                r_i, r_j, p_i, q_j, descent_p_i, descent_q_j = self._comp_descent(index)
-                p_i_new, q_j_new = self._update(p_i, q_j, descent_p_i, descent_q_j)
+                r_i, r_j, p_i, q_j, descent_p_i, descent_q_j = self._comp_descent(
+                    index)
+                p_i_new, q_j_new = self._update(
+                    p_i, q_j, descent_p_i, descent_q_j)
 
                 self.P[r_i] = p_i_new
                 self.Q[r_j] = q_j_new
@@ -88,7 +85,8 @@ class Matrix_Factorization(object):
             r_hat = self._estimate_r_hat()
             e = r_hat - self.r
             error = e.dot(e)
-            print 'The error is %s=================Epoch:%s' %(error, epoch_num)
+            print('The error is %s=================Epoch:%s' %
+                  (error, epoch_num))
             epoch_num += 1
 
         R_hat = self.P.dot(self.Q.T)
@@ -97,8 +95,9 @@ class Matrix_Factorization(object):
 
 if __name__ == '__main__':
 
-    user_rating = pd.read_csv('../data/Moivelens/ml-latest-small/user-rating.csv', index_col=0)
+    user_rating = pd.read_csv(
+        '../data/Moivelens/ml-latest-small/user-rating.csv', index_col=0)
 
-    aa = Matrix_Factorization(K = 5)
+    aa = Matrix_Factorization(K=5)
     aa.fit(user_rating)
     aa.start()

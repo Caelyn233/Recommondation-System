@@ -22,8 +22,9 @@ def user_similarity(user_rating, user):
     user_rating_feature = np.matrix(user_feature.values)
     user_rating_matrix = np.matrix(user_rating)
 
-    #使用余弦夹角作为度量标准计算相似度
-    similarity_uu = np.array(measure_method.cos_measure(user_rating_feature, user_rating_matrix))[0]
+    # 使用余弦夹角作为度量标准计算相似度
+    similarity_uu = np.array(measure_method.cos_measure(
+        user_rating_feature, user_rating_matrix))[0]
     similarity_uu_df = pd.Series(similarity_uu, index=user_index).drop(user)
 
     return similarity_uu_df
@@ -36,7 +37,7 @@ def top_k_similar(rated_sim, user_rate, K):
     :param K: 相似度最大的K个
     :return: top k 的对应的评分以及相似度
     """
-    #TOP K user的对应引索和评分
+    # TOP K user的对应引索和评分
     top_k_user = rated_sim.iloc[: K]
     top_index = top_k_user.index
     top_rating = user_rate.loc[top_index].values
@@ -75,7 +76,8 @@ def CF_recommend_estimate(user_rating, user, item_lst, K):
         other_user_rate_index = other_user_rate.index
 
         # 得到待评分item下已评分uesr与该user的相似度,并且以降序排序
-        rated_user_sim = user_similarity_lst.loc[other_user_rate_index].sort_values(ascending=False)
+        rated_user_sim = user_similarity_lst.loc[other_user_rate_index].sort_values(
+            ascending=False)
 
         if rated_user_sim.shape[0] < K:
 
@@ -83,11 +85,13 @@ def CF_recommend_estimate(user_rating, user, item_lst, K):
                 rate_hat = 0
 
             else:
-                top_rating, top_sim = top_k_similar(rated_user_sim, other_user_rate, K)
+                top_rating, top_sim = top_k_similar(
+                    rated_user_sim, other_user_rate, K)
                 rate_hat = estimate_rate(top_rating, top_sim)
 
         else:
-            top_rating, top_sim = top_k_similar(rated_user_sim, other_user_rate, K)
+            top_rating, top_sim = top_k_similar(
+                rated_user_sim, other_user_rate, K)
             rate_hat = estimate_rate(top_rating, top_sim)
 
         rate_hat_lst.append(rate_hat)
@@ -97,8 +101,9 @@ def CF_recommend_estimate(user_rating, user, item_lst, K):
 
 if __name__ == '__main__':
 
-    movies_feature = pd.read_csv('../data/Moivelens/ml-latest-small/movies_feature.csv', index_col=0)
-    user_rating = pd.read_csv('../data/Moivelens/ml-latest-small/user-rating.csv', index_col=0)
+    movies_feature = pd.read_csv(
+        '../data/Moivelens/ml-latest-small/movies_feature.csv', index_col=0)
+    user_rating = pd.read_csv(
+        '../data/Moivelens/ml-latest-small/user-rating.csv', index_col=0)
 
-    print CF_recommend_estimate(user_rating, 1, [10, 17], 50)
-
+    print(CF_recommend_estimate(user_rating, 1, [10, 17], 50))
